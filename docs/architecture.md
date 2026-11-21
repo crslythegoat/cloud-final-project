@@ -1,10 +1,10 @@
-# Arquitectura ajustada al integrador
+# Arquitectura del proyecto
 
 ## Componentes
 
 FastAPI sirve REST, SSE y el build React. El administrador de bots abre hasta nueve clientes HTTP dentro del mismo proceso. El scheduler lanza una sincronización cada 180 segundos y comparte la misma exclusión de ejecución con el botón manual. No se ejecuta un worker separado.
 
-MongoDB solo contiene categorías, productos, clientes y pedidos: `categories`, `products`, `customers`, `orders`. `database.collection()` rechaza cualquier otro nombre antes de abrir la base. La única excepción de mantenimiento es `cleanup_mongo.py`, que inspecciona o elimina explícitamente las colecciones antiguas conocidas.
+MongoDB solo contiene categorías, productos, clientes y pedidos: `categories`, `products`, `customers`, `orders`. `database.collection()` rechaza cualquier otro nombre antes de abrir la base. La única excepción de mantenimiento es `cleanup_mongo.py`, que inspecciona o elimina explícitamente las colecciones técnicas conocidas.
 
 ## Consistencia y enrutamiento
 
@@ -20,7 +20,7 @@ Se captura el estado actual de las cuatro colecciones de los tres orígenes, man
 
 Cada documento/versión usa una identidad de recibo determinista. El upsert y el recibo se confirman en la misma transacción PostgreSQL. Una entrega repetida compara su hash y no añade filas; una versión antigua no sustituye una nueva. Las claves primarias, únicas y foráneas de Neon siguen activas. Un fallo se registra en `system_logs` y se reintentará al volver a leer el origen en el próximo ciclo.
 
-El bloqueo advisory de PostgreSQL impide dos ciclos nuevos simultáneos. Debe detenerse el worker antiguo al actualizar, porque ejecuta un protocolo diferente. El scheduler no dispara el primer ciclo hasta transcurridos 180 segundos; el botón permite ejecutarlo antes.
+El bloqueo advisory de PostgreSQL impide dos ciclos nuevos simultáneos. El scheduler no dispara el primer ciclo hasta transcurridos 180 segundos; el botón permite ejecutarlo antes.
 
 El ETL sincroniza el estado más reciente, incluyendo borrados lógicos; no conserva cada cambio intermedio ocurrido entre dos ciclos. Los recibos trazan versiones observadas y las ejecuciones quedan en Neon. SSE es telemetría efímera, no un registro durable de auditoría CRUD.
 
