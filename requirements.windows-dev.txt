@@ -1,0 +1,2 @@
+# Development dependencies only; replaces the unrelated global Windows freeze.
+-r requirements-dev.txt
